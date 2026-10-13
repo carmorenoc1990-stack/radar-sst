@@ -1,0 +1,31 @@
+name: Revisar normas SST
+
+on:
+  schedule:
+    # Todos los días a las 7:30 am hora de Perú (12:30 UTC)
+    - cron: "30 12 * * *"
+  workflow_dispatch: {}   # botón "Run workflow" para probar a mano
+
+permissions:
+  contents: write
+
+jobs:
+  revisar:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - name: Buscar normas nuevas
+        env:
+          TELEGRAM_BOT_TOKEN: ${{ secrets.TELEGRAM_BOT_TOKEN }}
+          TELEGRAM_CHAT_ID: ${{ secrets.TELEGRAM_CHAT_ID }}
+        run: python scripts/fetch_normas.py
+      - name: Guardar cambios
+        run: |
+          git config user.name "radar-sst"
+          git config user.email "radar-sst@users.noreply.github.com"
+          git add data/normas.json
+          git diff --cached --quiet || git commit -m "Actualiza normas SST"
+          git push
