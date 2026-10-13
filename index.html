@@ -1,0 +1,247 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Radar Normativo SST Perú</title>
+<style>
+  :root {
+    --bg: #f6f7f4; --card: #ffffff; --ink: #1d2a24; --muted: #62706a;
+    --line: #dfe4de; --brand: #1f6f4a; --brand-ink: #ffffff;
+    --new: #c2410c; --warn: #a16207; --bad: #b91c1c; --ok: #1f6f4a;
+  }
+  @media (prefers-color-scheme: dark) {
+    :root {
+      --bg: #121815; --card: #1a221e; --ink: #e7ede9; --muted: #98a69f;
+      --line: #2a352f; --brand: #4cbf8a; --brand-ink: #0c1411;
+      --new: #fb923c; --warn: #facc15; --bad: #f87171; --ok: #4cbf8a;
+    }
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; background: var(--bg); color: var(--ink);
+    font: 16px/1.5 system-ui, -apple-system, "Segoe UI", Roboto, sans-serif; }
+  header { padding: 20px 16px 8px; max-width: 980px; margin: 0 auto; }
+  h1 { margin: 0; font-size: 1.5rem; }
+  .sub { color: var(--muted); font-size: .9rem; margin-top: 2px; }
+  main { max-width: 980px; margin: 0 auto; padding: 0 16px 48px; }
+  .demo { background: #fef3c7; color: #78350f; border: 1px solid #fcd34d;
+    padding: 10px 12px; border-radius: 8px; margin: 12px 0; font-size: .9rem; }
+  .bar { display: grid; gap: 8px; margin: 12px 0; }
+  .bar input[type=search] { width: 100%; padding: 12px 14px; font-size: 1rem;
+    border: 1px solid var(--line); border-radius: 10px; background: var(--card); color: var(--ink); }
+  .filters { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 8px; }
+  select { padding: 9px 10px; border: 1px solid var(--line); border-radius: 8px;
+    background: var(--card); color: var(--ink); font-size: .9rem; }
+  .meta { display: flex; justify-content: space-between; flex-wrap: wrap; gap: 8px;
+    color: var(--muted); font-size: .85rem; margin: 6px 0 12px; }
+  button.link { background: none; border: none; color: var(--brand); cursor: pointer;
+    font: inherit; padding: 0; text-decoration: underline; }
+  .card { background: var(--card); border: 1px solid var(--line); border-radius: 12px;
+    padding: 14px 16px; margin-bottom: 10px; }
+  .card h2 { font-size: 1.02rem; margin: 6px 0; line-height: 1.35; }
+  .card h2 a { color: var(--ink); text-decoration: none; }
+  .card h2 a:hover { text-decoration: underline; }
+  .row { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; font-size: .8rem; color: var(--muted); }
+  .chip { border: 1px solid var(--line); border-radius: 999px; padding: 1px 9px; }
+  .chip.tipo { background: var(--brand); color: var(--brand-ink); border-color: var(--brand); }
+  .chip.nueva { background: var(--new); color: #fff; border-color: var(--new); font-weight: 600; }
+  .chip.vigente { color: var(--ok); border-color: var(--ok); }
+  .chip.modificada { color: var(--warn); border-color: var(--warn); }
+  .chip.derogada { color: var(--bad); border-color: var(--bad); }
+  .resumen { margin: 6px 0 0; font-size: .93rem; }
+  .nota { margin-top: 8px; font-size: .85rem; }
+  .nota textarea { width: 100%; min-height: 54px; border: 1px solid var(--line); border-radius: 8px;
+    padding: 8px; background: var(--bg); color: var(--ink); font: inherit; }
+  mark { background: #fde68a; color: #1d2a24; border-radius: 3px; padding: 0 1px; }
+  .vacio { text-align: center; color: var(--muted); padding: 40px 0; }
+  .tools { display: flex; gap: 12px; flex-wrap: wrap; font-size: .85rem; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Radar Normativo SST · Perú</h1>
+  <div class="sub" id="actualizado">Cargando…</div>
+</header>
+<main>
+  <div id="aviso"></div>
+  <div class="bar">
+    <input type="search" id="q" placeholder="Buscar: ley 29783, comité, ergonomía, SUNAFIL, riesgos psicosociales…" autofocus>
+    <div class="filters">
+      <select id="f-tipo"><option value="">Todos los tipos</option></select>
+      <select id="f-entidad"><option value="">Todas las entidades</option></select>
+      <select id="f-tema"><option value="">Todos los temas</option></select>
+      <select id="f-estado">
+        <option value="">Cualquier estado</option>
+        <option>vigente</option><option>modificada</option><option>derogada</option>
+      </select>
+      <select id="f-orden">
+        <option value="rel">Más relevantes</option>
+        <option value="fecha">Fecha de publicación (reciente)</option>
+        <option value="detectada">Detectadas (reciente)</option>
+      </select>
+    </div>
+  </div>
+  <div class="meta">
+    <span id="conteo"></span>
+    <span class="tools">
+      <label><input type="checkbox" id="f-nuevas"> Solo nuevas (7 días)</label>
+      <button class="link" id="limpiar">Limpiar filtros</button>
+    </span>
+  </div>
+  <div id="lista"></div>
+</main>
+
+<script>
+(function () {
+  var normas = [];
+  var $ = function (id) { return document.getElementById(id); };
+
+  function norm(s) {
+    return (s || "").toString().toLowerCase()
+      .normalize("NFD").replace(/[̀-ͯ]/g, "");
+  }
+  function esc(s) {
+    return (s || "").replace(/[&<>"']/g, function (c) {
+      return { "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c];
+    });
+  }
+  function fmtFecha(iso) {
+    if (!iso) return "s/f";
+    var p = iso.split("-");
+    var m = ["ene","feb","mar","abr","may","jun","jul","ago","sep","oct","nov","dic"];
+    return p[2] + " " + m[parseInt(p[1], 10) - 1] + " " + p[0];
+  }
+  function esNueva(n) {
+    if (!n.detectada) return false;
+    var d = new Date(n.detectada + "T00:00:00");
+    return (Date.now() - d.getTime()) / 86400000 <= 7;
+  }
+  function getNotas() {
+    try { return JSON.parse(localStorage.getItem("radar-sst-notas") || "{}"); } catch (e) { return {}; }
+  }
+  function setNota(id, txt) {
+    try {
+      var n = getNotas(); if (txt) n[id] = txt; else delete n[id];
+      localStorage.setItem("radar-sst-notas", JSON.stringify(n));
+    } catch (e) {}
+  }
+
+  function poblar(sel, valores) {
+    var s = $(sel);
+    valores.sort(function (a, b) { return a.localeCompare(b, "es"); });
+    valores.forEach(function (v) {
+      var o = document.createElement("option"); o.textContent = v; o.value = v; s.appendChild(o);
+    });
+  }
+
+  function iniciar(data) {
+    normas = data.normas || [];
+    var f = data.actualizado ? new Date(data.actualizado) : null;
+    $("actualizado").textContent = "Última revisión: " + (f ? f.toLocaleString("es-PE") : "sin datos") +
+      " · " + normas.length + " normas";
+    if (normas.some(function (n) { return n.demo; })) {
+      $("aviso").innerHTML = '<div class="demo">Estás viendo datos de ejemplo. Se reemplazan solos cuando corra el script por primera vez (ver README).</div>';
+    }
+    var uniq = function (fn) {
+      var o = {}; normas.forEach(function (n) { [].concat(fn(n)).forEach(function (v) { if (v) o[v] = 1; }); });
+      return Object.keys(o);
+    };
+    poblar("f-tipo", uniq(function (n) { return n.tipo; }));
+    poblar("f-entidad", uniq(function (n) { return n.entidad; }));
+    poblar("f-tema", uniq(function (n) { return n.temas || []; }));
+    render();
+  }
+
+  function puntaje(n, tokens) {
+    if (!tokens.length) return 1;
+    var t = norm(n.titulo), r = norm(n.resumen), x = norm((n.temas || []).join(" ") + " " + n.tipo + " " + n.entidad);
+    var total = 0;
+    for (var i = 0; i < tokens.length; i++) {
+      var k = tokens[i], p = 0;
+      if (t.indexOf(k) > -1) p += 3;
+      if (x.indexOf(k) > -1) p += 2;
+      if (r.indexOf(k) > -1) p += 1;
+      if (!p) return 0; // todas las palabras deben aparecer
+      total += p;
+    }
+    return total;
+  }
+
+  function resaltar(texto, tokens) {
+    var h = esc(texto);
+    tokens.forEach(function (k) {
+      if (k.length < 2) return;
+      var re = new RegExp("(" + k.replace(/[.*+?^${}()|[\]\\]/g, "\\$&") + ")", "gi");
+      h = h.replace(re, "<mark>$1</mark>");
+    });
+    return h;
+  }
+
+  function render() {
+    var q = $("q").value.trim();
+    var tokens = norm(q).split(/\s+/).filter(Boolean);
+    var tipo = $("f-tipo").value, ent = $("f-entidad").value, tema = $("f-tema").value,
+        est = $("f-estado").value, solo = $("f-nuevas").checked, orden = $("f-orden").value;
+
+    var res = normas.map(function (n) { return { n: n, s: puntaje(n, tokens) }; })
+      .filter(function (o) {
+        var n = o.n;
+        return o.s > 0 && (!tipo || n.tipo === tipo) && (!ent || n.entidad === ent) &&
+          (!tema || (n.temas || []).indexOf(tema) > -1) && (!est || n.estado === est) &&
+          (!solo || esNueva(n));
+      });
+
+    res.sort(function (a, b) {
+      if (orden === "rel" && tokens.length && b.s !== a.s) return b.s - a.s;
+      var ka = orden === "detectada" ? a.n.detectada : a.n.fecha;
+      var kb = orden === "detectada" ? b.n.detectada : b.n.fecha;
+      return (kb || "").localeCompare(ka || "");
+    });
+
+    $("conteo").textContent = res.length + " resultado" + (res.length === 1 ? "" : "s");
+    var notas = getNotas();
+    var cont = $("lista");
+    if (!res.length) { cont.innerHTML = '<div class="vacio">No hay normas con esos criterios.</div>'; return; }
+
+    cont.innerHTML = res.slice(0, 200).map(function (o) {
+      var n = o.n;
+      return '<article class="card">' +
+        '<div class="row">' +
+          (esNueva(n) ? '<span class="chip nueva">NUEVA</span>' : '') +
+          '<span class="chip tipo">' + esc(n.tipo) + '</span>' +
+          '<span class="chip">' + esc(n.entidad) + '</span>' +
+          '<span class="chip ' + esc(n.estado) + '">' + esc(n.estado) + '</span>' +
+          '<span>Publicada: ' + fmtFecha(n.fecha) + '</span>' +
+        '</div>' +
+        '<h2><a href="' + esc(n.url) + '" target="_blank" rel="noopener">' + resaltar(n.titulo, tokens) + '</a></h2>' +
+        (n.resumen ? '<p class="resumen">' + resaltar(n.resumen, tokens) + '</p>' : '') +
+        '<div class="row" style="margin-top:8px">' +
+          (n.temas || []).map(function (t) { return '<span class="chip">' + esc(t) + '</span>'; }).join("") +
+        '</div>' +
+        '<div class="nota"><textarea data-id="' + esc(n.id) + '" placeholder="Mi nota: ¿a qué documento del SGSST afecta?">' +
+          esc(notas[n.id] || "") + '</textarea></div>' +
+      '</article>';
+    }).join("");
+  }
+
+  ["q", "f-tipo", "f-entidad", "f-tema", "f-estado", "f-orden", "f-nuevas"].forEach(function (id) {
+    $(id).addEventListener(id === "q" ? "input" : "change", render);
+  });
+  $("limpiar").addEventListener("click", function () {
+    $("q").value = ""; ["f-tipo", "f-entidad", "f-tema", "f-estado"].forEach(function (id) { $(id).value = ""; });
+    $("f-nuevas").checked = false; $("f-orden").value = "rel"; render();
+  });
+  $("lista").addEventListener("change", function (e) {
+    if (e.target.tagName === "TEXTAREA") setNota(e.target.getAttribute("data-id"), e.target.value.trim());
+  });
+
+  fetch("data/normas.json?t=" + Date.now())
+    .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+    .then(iniciar)
+    .catch(function () {
+      $("actualizado").textContent = "No se pudo cargar data/normas.json. Ábrelo desde GitHub Pages o con un servidor local (python -m http.server).";
+    });
+})();
+</script>
+</body>
+</html>
