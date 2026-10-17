@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-10-17T15:52:20",
+  "actualizado": "2026-10-17T16:45:05",
   "normas": [
     {
       "id": "gobpe-8716569",
@@ -9,20 +9,6 @@
       "fecha": "2026-10-13",
       "resumen": "Se aprueba la Directiva N° 005-2026-MTPE/4, Directiva para la implementación de la campana \"Yo construyo sano y seguro\", la misma que como anexo forma parte integrante de la presente Resolución Min... 13 de octubre de",
       "tipo": "Resolución Ministerial",
-      "temas": [
-        "general"
-      ],
-      "estado": "vigente",
-      "detectada": "2026-10-17"
-    },
-    {
-      "id": "gobpe-8706677",
-      "titulo": "Resolución de Gerencia General N.° 000002-2026-DP/GG",
-      "entidad": "Presidencia",
-      "url": "https://www.gob.pe/institucion/presidencia/normas-legales/8706677-000002-2026-dp-gg",
-      "fecha": "2026-10-12",
-      "resumen": "Artículo 1.- DerogaciónDEROGAR la Resolución N° 000040-2026-DP/SSG, que aprobó la Directiva N° 001-2026-DP/SSG “Elaboración, revisión, aprobación y modificación de las directivas en el Despacho Pre... 12 de octubre de",
-      "tipo": "Resolución",
       "temas": [
         "general"
       ],
@@ -72,34 +58,6 @@
       "detectada": "2026-10-17"
     },
     {
-      "id": "gobpe-8643073",
-      "titulo": "Resolución de Secretaría General N.° 000077-2026-DP/SGDP",
-      "entidad": "Presidencia",
-      "url": "https://www.gob.pe/institucion/presidencia/normas-legales/8643073-000077-2026-dp-sgdp",
-      "fecha": "2026-09-24",
-      "resumen": "APROBAR el Texto Integrado del Reglamento de Organización y Funciones del Despacho Presidencial, el mismo que consta de dos (02) títulos, sesenta y dos (62) artículos y un (01) Anexo, que contiene ... 24 de setiembre de",
-      "tipo": "Resolución",
-      "temas": [
-        "general"
-      ],
-      "estado": "vigente",
-      "detectada": "2026-10-17"
-    },
-    {
-      "id": "gobpe-8589226",
-      "titulo": "Resolución de Secretaría General N.° 000073-2026-DP/SGDP",
-      "entidad": "Presidencia",
-      "url": "https://www.gob.pe/institucion/presidencia/normas-legales/8589226-000073-2026-dp-sgdp",
-      "fecha": "2026-09-10",
-      "resumen": "Aprobar la modificación de la Sección Segunda del Reglamento de Organización y Funciones del Despacho Presidencial, aprobada por Resolución Nº 000044-2024-DP/SG. 10 de setiembre de",
-      "tipo": "Resolución",
-      "temas": [
-        "general"
-      ],
-      "estado": "vigente",
-      "detectada": "2026-10-17"
-    },
-    {
       "id": "gobpe-394457",
       "titulo": "Resolución Ministerial N.° 375-2008-TR",
       "entidad": "MTPE",
@@ -123,48 +81,6 @@
       "tipo": "Decreto Supremo",
       "temas": [
         "construcción"
-      ],
-      "estado": "vigente",
-      "detectada": "2026-10-17"
-    },
-    {
-      "id": "gobpe-7827743",
-      "titulo": "Resolución de Superintendencia N.° 052-2026-SUNAFIL",
-      "entidad": "SUNAFIL",
-      "url": "https://www.gob.pe/institucion/sunafil/normas-legales/7827743-052-2026-sunafil",
-      "fecha": "",
-      "resumen": "Dejar sin efecto la Versión 1 de la Directiva N° 002-2020-SUNAFIL/DINI, denominada",
-      "tipo": "Resolución de Superintendencia",
-      "temas": [
-        "inspección"
-      ],
-      "estado": "vigente",
-      "detectada": "2026-10-17"
-    },
-    {
-      "id": "gobpe-2062901",
-      "titulo": "Resolución de Superintendencia N.° 216-2021",
-      "entidad": "SUNAFIL",
-      "url": "https://www.gob.pe/institucion/sunafil/normas-legales/2062901-216-2021",
-      "fecha": "",
-      "resumen": "Aprobar la Versión 2 de la Directiva N° 001-2020-SUNAFIL/INII, denominada \"Directiva sobre",
-      "tipo": "Resolución de Superintendencia",
-      "temas": [
-        "inspección"
-      ],
-      "estado": "vigente",
-      "detectada": "2026-10-17"
-    },
-    {
-      "id": "gobpe-4554801",
-      "titulo": "Resolución de Gerencia General N.° 207-2023-SUNAFIL-GG",
-      "entidad": "SUNAFIL",
-      "url": "https://www.gob.pe/institucion/sunafil/normas-legales/4554801-207-2023-sunafil-gg",
-      "fecha": "",
-      "resumen": "Aprobar la Directiva N° 002-2021-SUNAFIL/OAD-UCEC, denominada DIRECTIVA QUE REGULA LA",
-      "tipo": "Resolución",
-      "temas": [
-        "inspección"
       ],
       "estado": "vigente",
       "detectada": "2026-10-17"
