@@ -1,5 +1,5 @@
 {
-  "actualizado": "2026-10-28T13:32:51",
+  "actualizado": "2026-10-29T13:36:35",
   "normas": [
     {
       "id": "gobpe-8716569",
@@ -14,6 +14,20 @@
       ],
       "estado": "vigente",
       "detectada": "2026-10-17"
+    },
+    {
+      "id": "gobpe-8767191",
+      "titulo": "Resolución de Superintendencia N.° 231-2026-SUNAFIL",
+      "entidad": "SUNAFIL",
+      "url": "https://www.gob.pe/institucion/sunafil/normas-legales/8767191-231-2026-sunafil",
+      "fecha": "2026-10-12",
+      "resumen": "Aprobar el “Plan de protección y contingencia institucional de la Superintendencia Nacional de Fiscalización Laboral – SUNAFIL ante el Fenómeno El Niño”, que como Anexo forma parte integrante de la... 12 de octubre de",
+      "tipo": "Resolución de Superintendencia",
+      "temas": [
+        "inspección"
+      ],
+      "estado": "vigente",
+      "detectada": "2026-10-29"
     },
     {
       "id": "gobpe-8705721",
