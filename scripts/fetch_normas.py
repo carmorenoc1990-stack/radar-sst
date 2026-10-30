@@ -66,11 +66,15 @@ ADMIN_DURO = [
     "declarar improcedente", "declarar infundad", "declarar fundad", "declarar nul",
     "prescripcion de la exigibilidad", "recurso de apelacion", "recurso de reconsideracion",
     "auxiliar coactivo", "cargo de confianza", "vacaciones", "licencia",
+    "escala remunerativa", "remunerativ", "remuneracion", "regimen laboral del decreto legislativo",
+    "regimen laboral", "valor de la unidad", "bonificacion", "aguinaldo", "incentivo",
+    "plan operativo institucional", "reglamento de organizacion y funciones",
 ]
 # Trámites que además descartan las coincidencias "medias".
 ADMIN_BLANDO = [
     "multa", "contrato", "personal", "concurso", "cas ", "servidor", "viaje",
     "ejecucion coactiva", "procedimiento sancionador", "direccion regional",
+    "trabajadores sujetos", "presupuesto", "transferencia", "escala",
 ]
 
 TEMAS = {
@@ -237,16 +241,33 @@ def meta(pagina, nombre):
 def normalizar_entidad(texto):
     t = sin_tildes(texto)
     reglas = [
-        ("trabajo y promocion del empleo", "MTPE"), ("fiscalizacion laboral", "SUNAFIL"),
+        ("ministerio de trabajo", "MTPE"), ("trabajo y promocion del empleo", "MTPE"), ("fiscalizacion laboral", "SUNAFIL"),
         ("ministerio de salud", "MINSA"), ("energia y minas", "MINEM"),
         ("vivienda, construccion", "MVCS"), ("inversion en energia y mineria", "OSINERGMIN"),
         ("consejo de ministros", "PCM"), ("congreso de la republica", "Congreso"),
         ("presidencia de la republica", "Presidencia"),
+        ("economia y finanzas", "MEF"), ("justicia y derechos humanos", "MINJUS"),
+        ("produccion", "PRODUCE"), ("transportes y comunicaciones", "MTC"),
+        ("ambiente", "MINAM"), ("agrario", "MIDAGRI"), ("interior", "MININTER"),
+        ("defensa", "MINDEF"), ("educacion", "MINEDU"), ("mujer", "MIMP"),
     ]
     for clave, sigla in reglas:
         if clave in t:
             return sigla
     return texto.strip().title()[:60] or "El Peruano"
+
+
+SUFIJOS_ENTIDAD = {
+    "TR": "MTPE", "EF": "MEF", "SA": "MINSA", "EM": "MINEM", "PCM": "PCM",
+    "VIVIENDA": "MVCS", "SUNAFIL": "SUNAFIL", "MINAM": "MINAM", "PRODUCE": "PRODUCE",
+    "MTC": "MTC", "JUS": "MINJUS", "MIDAGRI": "MIDAGRI", "IN": "MININTER", "DE": "MINDEF",
+}
+
+
+def entidad_por_sufijo(numero):
+    """Deduce la entidad del sufijo del número (230-2026-EF -> MEF)."""
+    m = re.search(r"\d{4}[-/]([A-Z]+)", numero.upper())
+    return SUFIJOS_ENTIDAD.get(m.group(1), "") if m else ""
 
 
 def parsear_elperuano(pagina, nid):
@@ -266,18 +287,15 @@ def parsear_elperuano(pagina, nid):
     h2 = [texto_limpio(x) for x in re.findall(r"<h2[^>]*>(.*?)</h2>", cabeza, re.S | re.I)]
     h2 = [x for x in h2 if re.search(r"[A-Za-zÁÉÍÓÚáéíóú]", x)]
     numero = next((x for x in h2 if re.search(r"N[º°o]\.?\s*\d", x, re.I)), "")
-    entidad_h2 = h2[0] if h2 and h2[0] != numero else ""
-    tipo_h2 = ""
-    for x in h2:
-        if x != numero and x != entidad_h2 and any(re.search(pt, x, re.I) for _, pt in TIPOS):
-            tipo_h2 = x
-            break
+    tipo_h2 = next((x for x in h2 if x != numero and any(re.search(pt, x, re.I) for _, pt in TIPOS)), "")
+    entidad_h2 = next((x for x in h2 if x not in (numero, tipo_h2)
+                       and not any(re.fullmatch(r"\s*" + pt + r"\s*", x, re.I) for _, pt in TIPOS)), "")
     tipo_txt = tipo_h2 or tipo_sufijo
     tipo = clasificar_tipo(tipo_txt) if tipo_txt else clasificar_tipo(sumilla)
     if tipo == "Otra norma" and tipo_sufijo:
         tipo = tipo_sufijo.title()
 
-    nombre = " ".join(x for x in [tipo_h2.title() if tipo_h2 else tipo, numero.replace("Nº", "N.°")] if x)
+    nombre = " ".join(x for x in [tipo, numero.replace("Nº", "N.°")] if x)
     fecha = ""
     m = re.search(r"Fecha de publicaci[oó]n:?\s*(?:<[^>]*>\s*)*(\d{1,2})/(\d{1,2})/(\d{4})", cabeza, re.I)
     if m:
@@ -289,7 +307,8 @@ def parsear_elperuano(pagina, nid):
         "id": "elperuano-" + nid,
         "titulo": nombre or sumilla[:120],
         "tipo": tipo,
-        "entidad": normalizar_entidad(entidad_h2) if entidad_h2 else "El Peruano",
+        "entidad": (normalizar_entidad(entidad_h2) if entidad_h2
+                    else (entidad_por_sufijo(numero) or "El Peruano")),
         "fecha": fecha,
         "url": ELPERUANO_BASE + nid,
         "resumen": sumilla[:400],
@@ -340,6 +359,13 @@ def leer_elperuano(db, existentes, claves, nuevas, errores):
         nuevas.append(n)
     db["vistos_elperuano"] = sorted(vistos, key=lambda s: int(s.split("-")[0]), reverse=True)[:6000]
     print(f"El Peruano: {revisadas} páginas revisadas, {fallos} con error")
+
+
+def recortar(texto, largo):
+    """Corta en el último espacio y agrega '…' para no partir palabras."""
+    if len(texto) <= largo:
+        return texto
+    return texto[:largo].rsplit(" ", 1)[0] + "…"
 
 
 def telegram(texto):
@@ -444,7 +470,7 @@ def main():
             for n in nuevas[:15]:
                 lineas.append(f"\n• <b>{html.escape(n['tipo'])}</b> · {html.escape(n['entidad'])}"
                               f"\n{html.escape(n['titulo'][:120])}"
-                              f"\n{html.escape((n.get('resumen') or '')[:180])}\n{n['url']}")
+                              f"\n{html.escape(recortar(n.get('resumen') or '', 200))}\n{n['url']}")
             telegram("\n".join(lineas))
     return 0
 
